@@ -36,8 +36,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/error/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/").hasRole(MEMBER_ROLE_NAME)
                 .antMatchers(HttpMethod.POST, "/").hasRole(ADMIN_ROLE_NAME)
-                //.and().exceptionHandling().accessDeniedPage("/error/401")
-        ;
+                .and().exceptionHandling().accessDeniedPage("/WEB-INF/error/403");
     }
 
 }

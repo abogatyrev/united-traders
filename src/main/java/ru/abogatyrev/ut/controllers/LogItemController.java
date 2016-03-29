@@ -51,7 +51,6 @@ public class LogItemController {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    @ResponseBody
     public LogItemValidationRestException logItemValidationExceptionHandle(HttpMessageNotReadableException e){
         String fieldName;
         String errMsg;

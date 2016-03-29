@@ -12,7 +12,7 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
 
     @Override
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-        config.setLimitParamName("size");
+        config.setLimitParamName("size"); // название параметра для передачи числа записей на странице
         super.configureRepositoryRestConfiguration(config);
     }
 }
