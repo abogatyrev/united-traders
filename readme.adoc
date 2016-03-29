@@ -15,7 +15,126 @@ mvn package && java -jar target/united-traders-1.0.0-SNAPSHOT.jar
 ----
 
 === Проверка функциональности
-TODO:
+* Запрос на получение списка LogItem без авторизации
+----
+curl -X GET -H "Cache-Control: no-cache" "http://localhost:8080/"
+----
+результат
+----
+{
+  "message": "Access denied"
+}
+----
+* Запрос на добавление новой записи LogItem
+----
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Digest username="admin", realm="realm", nonce="MTQ2MDQ4MjE3NDU0MzphODNmOGQ1MGVmOGY2YjY2OTQzMDdhOTQ4OTYxZGExYQ==", uri="/", qop=auth, nc=, cnonce="", response="82130f42b5134325907033ffabc5bfda", opaque=""" -H "Cache-Control: no-cache" -d '{
+	"dt": "1997-07-16T19:20:30+01:00",
+	"level": "INFO",
+	"message": "this is info message"
+}' "http://localhost:8080/"
+----
+результат _(при условии что записей не было)_
+----
+{
+  "id": 1
+}
+----
+* Запрос на получение списка LogItem с авторизацией
+----
+curl -X GET -H "Authorization: Digest username="user", realm="realm", nonce="MTQ2MDQ4MjE3NDU0MzphODNmOGQ1MGVmOGY2YjY2OTQzMDdhOTQ4OTYxZGExYQ==", uri="/", qop=auth, nc=, cnonce="", response="452816d390ac7cdbc884019789d1167b", opaque=""" -H "Cache-Control: no-cache" "http://localhost:8080/"
+----
+результат
+----
+{
+  "content": [
+    {
+      "dt": "1997-07-16T18:20:30Z",
+      "level": "INFO",
+      "message": "this is info message"
+    },
+    {
+      "dt": "1997-07-16T18:20:30Z",
+      "level": "INFO",
+      "message": "this is info message"
+    }
+  ],
+  "totalElements": 2,
+  "totalPages": 1,
+  "last": true,
+  "size": 20,
+  "number": 0,
+  "sort": [
+    {
+      "direction": "ASC",
+      "property": "dt",
+      "ignoreCase": false,
+      "nullHandling": "NATIVE",
+      "ascending": true
+    }
+  ],
+  "numberOfElements": 2,
+  "first": true
+}
+----
+* Запрос на добавление записи LogItem  с не достаточными правами доступа
+----
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Digest username="other", realm="realm", nonce="MTQ2MDQ4MjE3NDU0MzphODNmOGQ1MGVmOGY2YjY2OTQzMDdhOTQ4OTYxZGExYQ==", uri="/", qop=auth, nc=, cnonce="", response="f6bfbb176131578c07c0231b9394f841", opaque=""" -H "Cache-Control: no-cache" -d '{
+	"dt": "1997-07-16T19:20:30+01:00",
+	"level": "DEBUG",
+	"message": "this is debug message"
+}' "http://localhost:8080/"
+----
+результат
+----
+{
+  "message": "User 'other' does not have access"
+}
+----
+* Запрос на добавление записи LogItem с не правильным форматом поля 'level'
+----
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Digest username="admin", realm="realm", nonce="MTQ2MDQ4MjE3NDU0MzphODNmOGQ1MGVmOGY2YjY2OTQzMDdhOTQ4OTYxZGExYQ==", uri="/", qop=auth, nc=, cnonce="", response="82130f42b5134325907033ffabc5bfda", opaque=""" -H "Cache-Control: no-cache" -d '{
+	"dt": "1997-07-16T19:20:30+01:00",
+	"level": "WRONG_DEBUG",
+	"message": "this is wrong message"
+}' "http://localhost:8080/"
+----
+результат
+----
+{
+  "errors": [
+    {
+      "field": "level",
+      "message": "Can not construct instance of ru.abogatyrev.ut.model.LogLevel from String value 'WRONG_DEBUG': value not one of declared Enum instance names: [ERROR, DEBUG, FATAL, INFO, WARN]\n at [Source: java.io.PushbackInputStream@596ab9c8; line: 2, column: 35] (through reference chain: ru.abogatyrev.ut.model.LogItem[\"level\"])"
+    }
+  ]
+}
+----
+* Запрос на получение списка LogItem 'по странично'
+----
+curl -X GET -H "Authorization: Digest username="other", realm="realm", nonce="MTQ2MDQ4MjE3NDU0MzphODNmOGQ1MGVmOGY2YjY2OTQzMDdhOTQ4OTYxZGExYQ==", uri="/?page=1&size=3", qop=auth, nc=, cnonce="", response="7115ecf119964cf6a22a534273fc20fb", opaque=""" -H "Cache-Control: no-cache" "http://localhost:8080/?page=1&size=3"
+----
+результат _(при условии что в списке только одна страница)_
+----
+{
+  "content": [],
+  "totalElements": 2,
+  "totalPages": 1,
+  "last": true,
+  "size": 3,
+  "number": 1,
+  "sort": [
+    {
+      "direction": "ASC",
+      "property": "dt",
+      "ignoreCase": false,
+      "nullHandling": "NATIVE",
+      "ascending": true
+    }
+  ],
+  "numberOfElements": 0,
+  "first": false
+}
+----
 
 === Коллекция запросов для https://www.getpostman.com/[Postman]
 https://app.getpostman.com/run-collection/035b8ce353e30a8db37a[Run in Postman]
