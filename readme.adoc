@@ -1,1 +1,22 @@
-== TODO: описание проекта...
+== Тестовое задание United Traders
+
+Веб приложение для хранения простых логов в виде REST API сервиса. С авторизацией Basic Auth (digest)
+
+=== Используемые фреймворки и технологии
+* Java 8
+* Spring (spring-boot, spring-data, spring-data-rest, spring-security)
+* hsqldb БД
+* Maven как сборщик проекта
+
+=== Сборка, запуск/останов проекта
+В корневом каталоге проекта выполнить команду:
+----
+mvn package && java -jar target/united-traders-1.0.0-SNAPSHOT.jar
+----
+
+=== Проверка функциональности
+TODO:
+
+=== Коллекция запросов для https://www.getpostman.com/[Postman]
+https://app.getpostman.com/run-collection/035b8ce353e30a8db37a[Run in Postman]
+
