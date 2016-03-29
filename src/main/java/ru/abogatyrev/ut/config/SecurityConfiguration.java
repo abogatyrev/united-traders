@@ -1,5 +1,6 @@
 package ru.abogatyrev.ut.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -7,6 +8,9 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.www.DigestAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.www.DigestAuthenticationFilter;
 
 /**
  * Created by Hamster on 27.03.2016.
@@ -32,11 +36,29 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
-                .httpBasic().and().authorizeRequests()
+                .exceptionHandling()
+                .authenticationEntryPoint(digestEntryPoint())
+                .and().authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/error/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/").hasRole(MEMBER_ROLE_NAME)
                 .antMatchers(HttpMethod.POST, "/").hasRole(ADMIN_ROLE_NAME)
-                .and().exceptionHandling().accessDeniedPage("/WEB-INF/error/403");
+                .and().exceptionHandling().accessDeniedPage("/WEB-INF/error/403")
+                .and().addFilter(digestAuthenticationFilter());
+    }
+
+    public DigestAuthenticationEntryPoint digestEntryPoint() {
+        DigestAuthenticationEntryPoint digestAuthenticationEntryPoint = new DigestAuthenticationEntryPoint();
+        digestAuthenticationEntryPoint.setKey("key");
+        digestAuthenticationEntryPoint.setRealmName("realm");
+        digestAuthenticationEntryPoint.setNonceValiditySeconds(60*60*24*14); // 14 days
+        return digestAuthenticationEntryPoint;
+    }
+
+    public DigestAuthenticationFilter digestAuthenticationFilter() throws Exception {
+        DigestAuthenticationFilter digestAuthenticationFilter = new DigestAuthenticationFilter();
+        digestAuthenticationFilter.setAuthenticationEntryPoint(digestEntryPoint());
+        digestAuthenticationFilter.setUserDetailsService(userDetailsServiceBean());
+        return digestAuthenticationFilter;
     }
 
 }
